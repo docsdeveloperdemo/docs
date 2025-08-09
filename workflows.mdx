@@ -1,0 +1,219 @@
+# Keyboard MCP - Common Workflows & Examples
+
+## Quick Start Workflows
+
+### Workflow 1: Setting Up Google Access for AI Assistant
+
+**Goal**: Allow an AI assistant to access your Google Drive and Gmail safely.
+
+#### Step 1: Connect Google OAuth
+1. Open the Keyboard MCP app from your system tray
+2. Click **Settings** → **OAuth Providers**
+3. Find **Google** in the provider list
+4. Click **Connect** - your browser will open
+5. Sign in to your Google account
+6. Grant the requested permissions:
+   - ✅ View your email messages and settings
+   - ✅ View and manage your Drive files  
+   - ✅ View and manage your Google Sheets
+   - ✅ View and manage your Google Slides
+7. Return to the app - Google should now show "Connected" ✅
+
+#### Step 2: Share Connection with AI
+1. Go to **Settings** → **WebSocket** 
+2. Copy the **Full Connection URL** (looks like: `ws://localhost:8080?key=abc123...`)
+3. Provide this URL to your AI assistant or application
+
+#### Step 3: Test the Connection
+1. Ask your AI assistant: "What's in my Google Drive?"
+2. You should see an approval request appear in the app
+3. Review the request details:
+   - **Risk Level**: Usually "Low" for read operations
+   - **Explanation**: Should say something like "List files in Google Drive"
+   - **Code**: Review the API call being made
+4. Click **Approve** if everything looks correct
+5. The AI can now access your Google Drive safely!
+
+**Available User Tokens**: `KEYBOARD_PROVIDER_USER_TOKEN_FOR_GOOGLE`
+
+---
+
+### Workflow 2: Adding GitHub Access
+
+**Goal**: Let an AI assistant interact with your GitHub repositories.
+
+#### Step 1: Create GitHub OAuth App
+1. Go to [GitHub Settings](https://github.com/settings/developers) → **OAuth Apps**
+2. Click **New OAuth App**
+3. Fill in:
+   - **Application name**: "Keyboard MCP Desktop"
+   - **Homepage URL**: `http://localhost:3000`
+   - **Authorization callback URL**: `http://localhost:8082/callback`
+4. Click **Register application**
+5. Copy your **Client ID** and **Client Secret**
+
+#### Step 2: Configure in App
+**Option A: Environment Variables (Recommended)**
+1. Create/edit `.env` file in the app directory:
+   ```bash
+   GITHUB_CLIENT_ID=your_client_id_here
+   GITHUB_CLIENT_SECRET=your_client_secret_here
+   ```
+2. Restart the app
+3. GitHub will appear as available in OAuth Providers
+
+**Option B: Custom Provider**
+1. Go to **Settings** → **OAuth Providers** → **Add Provider**
+2. Click **GitHub** template to pre-fill
+3. Enter your Client ID and Client Secret
+4. Click **Add Provider**
+
+#### Step 3: Connect and Use
+1. Click **Connect** next to GitHub
+2. Authorize the application in your browser
+3. Test with AI: "Show me my recent GitHub repositories"
+4. Approve the request when it appears
+5. The AI can now access GitHub with your permission
+
+**Available User Tokens**: `KEYBOARD_PROVIDER_USER_TOKEN_FOR_GITHUB`
+
+---
+
+### Workflow 3: Corporate OAuth Server Setup
+
+**Goal**: Connect to your company's centralized OAuth server.
+
+#### Step 1: Add Server Provider
+1. Go to **Settings** → **Server Providers**
+2. Click **Add Server**
+3. Enter:
+   - **Server Name**: "Company OAuth"
+   - **Server URL**: `https://oauth.company.com` (your company's OAuth server)
+4. Click **Add Server**
+
+#### Step 2: Discover Available Providers
+1. The app will automatically fetch available OAuth providers from your server
+2. You'll see providers like:
+   - 🟢 **google**: Configured and ready
+   - 🟢 **slack**: Configured and ready  
+   - 🔴 **github**: Not configured on server
+   - 🟢 **internal-api**: Company's internal API
+
+#### Step 3: Connect to Providers
+1. Click **Connect** next to any green (configured) provider
+2. You'll be redirected to your company's OAuth server
+3. Sign in with your corporate credentials
+4. The server handles the OAuth flow with the actual service
+5. Tokens are managed centrally but used locally
+
+**Benefits**:
+- ✅ IT manages OAuth app credentials centrally
+- ✅ Consistent permissions across the organization  
+- ✅ Easy to add new services company-wide
+- ✅ Corporate security policies enforced
+
+---
+
+## Advanced Workflows
+
+### Workflow 4: Custom Provider (Slack Example)
+
+**Goal**: Add Slack access that's not built into the app.
+
+#### Step 1: Create Slack App
+1. Go to [api.slack.com/apps](https://api.slack.com/apps)
+2. Click **Create New App** → **From scratch**
+3. Enter app name: "Keyboard MCP Desktop"
+4. Select your workspace
+5. Go to **OAuth & Permissions**
+6. Add **Redirect URLs**: `http://localhost:8082/callback`
+7. Add **Bot Token Scopes**:
+   - `channels:read` - View basic channel info
+   - `chat:write` - Send messages
+   - `files:read` - View files
+   - `users:read` - View basic user info
+8. Copy your **Client ID** and **Client Secret**
+
+#### Step 2: Add Custom Provider
+1. In Keyboard MCP: **Settings** → **OAuth Providers** → **Add Provider**
+2. Don't use templates - fill manually:
+   - **Provider ID**: `slack`
+   - **Display Name**: `Slack`
+   - **Icon**: `💬`
+   - **Client ID**: (from Slack app)
+   - **Client Secret**: (from Slack app)
+   - **Authorization URL**: `https://slack.com/oauth/v2/authorize`
+   - **Token URL**: `https://slack.com/api/oauth.v2.access`
+   - **User Info URL**: `https://slack.com/api/users.identity`
+   - **Scopes**: `channels:read,chat:write,files:read,users:read`
+   - **Use PKCE**: ✅ Checked
+   - **Redirect URI**: `http://localhost:8082/callback`
+3. Click **Add Provider**
+
+#### Step 3: Connect and Test
+1. Click **Connect** next to your Slack provider
+2. Authorize in browser - you'll see the scopes you configured
+3. Test: "Send a message to #general channel"
+4. Review and approve the request
+5. AI can now interact with Slack!
+
+**Available User Tokens**: `KEYBOARD_PROVIDER_USER_TOKEN_FOR_SLACK`
+
+---
+
+## Troubleshooting Workflows
+
+### Workflow 6: Fixing "Token Expired" Issues
+
+**Problem**: Provider shows "Expired" status, AI requests fail.
+
+#### Quick Fix
+1. Go to **Settings** → **OAuth Providers**
+2. Find the expired provider (🟡 yellow status)
+3. Click **Refresh** button
+4. If successful, status changes to "Connected" (🟢)
+5. Test with AI assistant
+
+#### If Refresh Fails
+1. Click **Disconnect** next to the provider
+2. Click **Connect** again
+3. Re-authorize in your browser
+4. Provider should now be "Connected"
+
+#### Prevention
+- **Check token expiration** regularly in Settings
+- **Set up notifications** if your OAuth provider supports them
+- **Use refresh tokens** (most providers handle this automatically)
+
+---
+
+### Workflow 7: Recovering from Connection Issues
+
+**Problem**: AI assistant can't connect to the approval app.
+
+#### Diagnose the Issue
+1. **Check WebSocket key**:
+   - **Settings** → **WebSocket**
+   - Verify the connection URL is what you shared with the AI
+   
+2. **Test connection manually**:
+   ```javascript
+   // In browser console or Node.js
+   const ws = new WebSocket('ws://localhost:8080?key=YOUR_KEY');
+   ws.onopen = () => console.log('Connected!');
+   ws.onerror = (error) => console.log('Error:', error);
+   ```
+
+#### Fix Steps
+1. **Regenerate WebSocket key**:
+   - **Settings** → **WebSocket** → **Regenerate Key**
+   - Copy the new connection URL
+   - Update your AI assistant with the new URL
+
+2. **Restart the app** if port conflicts exist
+
+3. **Check system settings**:
+   - Ensure localhost connections are allowed
+   - Verify the app isn't being blocked by antivirus
+
+These workflows should help you get the most out of the Keyboard MCP Desktop App's OAuth and user token features. Remember: you're always in control of what gets approved!
