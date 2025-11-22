@@ -1,0 +1,83 @@
+---
+title: "Keyboard MCP Server: Quick Setup"
+description: "Get your AI assistant superpowers in 5 minutes"
+author: "Keyboard Team"
+date: "2025-09-12T15:41:06.386Z"
+tags: ["mcp", "cursor", "vscode", "automation", "quick-start"]
+---
+
+## What is Keyboard MCP?
+
+Transform your AI assistant from chatbot to automation powerhouse:
+
+🚀 **Build apps** (React, Next.js, Express)
+📊 **Create presentations** (Google Slides)  
+📝 **Publish content** (Notion, blogs)
+🔗 **Connect APIs** (30+ services)
+⚡ **Execute code** (GitHub Codespaces)
+
+## 5-Minute Setup
+
+### Cursor Setup
+```bash
+mkdir -p ~/.cursor
+cat > ~/.cursor/mcp.json << 'EOF'
+{
+  "mcpServers": {
+    "keyboard": {
+      "command": "npx",
+      "args": ["-y", "keyboard-mcp"],
+      "env": {"GITHUB_PAT_TOKEN": "your_token_here"}
+    }
+  }
+}
+EOF
+```
+
+### VS Code Setup  
+```bash
+mkdir -p .vscode
+cat > .vscode/mcp.json << 'EOF'
+{
+  "servers": {
+    "keyboard": {
+      "type": "stdio",
+      "command": "npx", 
+      "args": ["-y", "keyboard-mcp"]
+    }
+  }
+}
+EOF
+```
+
+### Get GitHub Token
+1. [Create token](https://github.com/settings/personal-access-tokens/new)
+2. Add `codespace` + `repo` scopes
+3. Replace `your_token_here` in config
+
+### Test It
+- Open editor → Enable **Agent mode**
+- Try: *"Create a React todo app"*
+
+## Examples
+
+**Apps**: `Build a React dashboard for GitHub stats`
+**Presentations**: `Create pitch deck slides about our startup` 
+**Content**: `Write a blog post about AI in Notion`
+**Automation**: `Tweet when we get new GitHub stars`
+**APIs**: `Build Express API with email sending`
+
+## Pro Tips
+💡 Start simple: "Create hello world React app"
+💡 Be specific: "Task app with auth" vs "build an app"
+💡 Chain requests: "Now add dark mode"
+💡 Save workflows as "Keyboard Shortcuts"
+
+## Troubleshooting
+**No Agent mode?** → Install GitHub Copilot
+**No tools?** → Restart editor after config  
+**Permissions?** → Check token scopes
+**Stuck?** → Visit [keyboard.dev](https://keyboard.dev)
+
+---
+**🎉 Ready!** Your AI has superpowers now.
