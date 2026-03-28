@@ -1,0 +1,176 @@
+# Keyboard MCP - FAQ & Troubleshooting
+
+## Frequently Asked Questions
+
+### General Questions
+
+**Q: What is the Keyboard MCP Desktop App?**
+A: It's a security approval system that sits in your system tray and lets you safely approve or reject code execution requests from AI assistants. It manages OAuth connections to services like Google, GitHub, and Microsoft, providing secure access tokens only when you approve them.
+
+**Q: Is my data safe?**
+A: Yes. All sensitive data is encrypted using AES-256 encryption, OAuth tokens are stored securely, and you have full control over what gets approved. The app only runs on localhost and never sends your data to external servers.
+
+**Q: Do I need technical knowledge to use this?**
+A: No. The app is designed for non-technical users. You just need to click "Connect" for OAuth providers and "Approve/Reject" for requests. However, some setup (like creating OAuth apps) may require following step-by-step instructions.
+
+**Q: Can multiple AI assistants use the same app?**
+A: Yes. You can share the same WebSocket connection URL with multiple AI assistants, or generate unique keys for each one. Each request appears separately for your approval.
+
+### OAuth Provider Questions
+
+**Q: Why do some providers show "No Client ID"?**
+A: Built-in providers (Google, GitHub, Microsoft) need OAuth application credentials to work. You have three options:
+1. Set up environment variables with your OAuth app credentials
+2. Use a Server Provider that manages credentials centrally  
+3. Add the provider as a custom provider with your own credentials
+
+**Q: How do I get OAuth credentials for Google/GitHub/etc.?**
+A: You need to create an OAuth application in each service's developer console:
+- **Google**: [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials
+- **GitHub**: [GitHub Settings](https://github.com/settings/developers) → OAuth Apps
+- **Microsoft**: [Azure App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+
+Always set the redirect URI to: `http://localhost:8082/callback`
+
+**Q: What's the difference between "OAuth Providers" and "Server Providers"?**
+A: 
+- **OAuth Providers**: Direct connections to services (Google, GitHub, etc.) using your own OAuth app credentials
+- **Server Providers**: Connections through a centralized OAuth server that manages credentials for your organization
+
+**Q: Can I use the same OAuth app for multiple computers?**
+A: Yes, but each computer will have separate tokens and approvals. The OAuth app credentials can be reused across installations.
+
+### User Token Questions
+
+**Q: What are user tokens and how do they work?**
+A: User tokens are temporary access tokens that AI assistants use to access your accounts. Here's the flow:
+1. AI requests access (e.g., "read my Gmail")
+2. Request appears in your approval app
+3. You review and approve/reject
+4. If approved, AI gets a temporary token to access your account
+5. Token expires automatically for security
+
+**Q: Which user tokens are available?**
+A: Available tokens depend on which OAuth providers you've connected:
+- `KEYBOARD_PROVIDER_USER_TOKEN_FOR_GOOGLE` - Google services (Gmail, Drive, Sheets, etc.)
+- `KEYBOARD_PROVIDER_USER_TOKEN_FOR_GITHUB` - GitHub repositories and profile
+- `KEYBOARD_PROVIDER_USER_TOKEN_FOR_MICROSOFT` - Microsoft Graph API
+- `KEYBOARD_PROVIDER_USER_TOKEN_FOR_[PROVIDER]` - Any custom provider you've added
+
+**Q: How long do tokens last?**
+A: Token lifetime depends on the OAuth provider:
+- Google: Usually 1 hour (automatically refreshed)
+- GitHub: No expiration (until you disconnect)
+- Microsoft: Usually 1 hour (automatically refreshed)
+- Custom providers: Depends on their configuration
+
+**Q: Can I manually copy tokens for use in my own scripts?**
+A: Yes. In Settings → OAuth Providers, click "Copy Token" next to any connected provider to get the current access token for manual use.
+
+### Security Questions
+
+**Q: What happens if I lose my connection key?**
+A: Go to Settings → WebSocket → Regenerate Key. This creates a new key and invalidates the old one. You'll need to update any AI assistants with the new connection URL.
+
+**Q: What if I accidentally approve something I shouldn't have?**
+A: The token given to the AI is temporary and will expire. You can also:
+1. Disconnect the provider immediately (Settings → OAuth Providers → Disconnect)
+2. Revoke access in the service's account settings (Google, GitHub, etc.)
+3. Change your account password if you're concerned
+
+**Q: Is the WebSocket connection secure?**
+A: Yes. It's restricted to localhost only (127.0.0.1), requires a unique connection key, and uses secure WebSocket protocols. External networks cannot access it.
+
+**Q: What data does the app store?**
+A: The app stores:
+- OAuth tokens (encrypted)
+- Provider configurations (encrypted)  
+- Encryption keys (restricted file permissions)
+- WebSocket keys (restricted file permissions)
+- Approval history (temporary, for the current session)
+
+## Common Issues & Solutions
+
+### Authentication Issues
+
+#### Issue: "OAuth authentication failed"
+**Symptoms**: Browser shows error during OAuth flow, provider doesn't connect
+
+**Solutions**:
+1. **Check redirect URI**: Must be exactly `http://localhost:8082/callback`
+2. **Verify credentials**: Ensure Client ID and Client Secret are correct
+3. **Check OAuth app status**: Make sure the app is active in the provider console
+4. **Clear browser cache**: Sometimes old sessions interfere
+5. **Try incognito mode**: Eliminates browser extension interference
+
+#### Issue: Provider shows "Expired" but refresh fails
+**Symptoms**: Yellow "Expired" status, clicking Refresh doesn't work
+
+**Solutions**:
+1. **Full reconnection**: 
+   - Click Disconnect
+   - Wait 10 seconds  
+   - Click Connect again
+2. **Check provider settings**: Ensure your OAuth app still exists and is active
+3. **Verify scopes**: Make sure requested scopes are still approved in your account
+4. **Update credentials**: Client secret may have been regenerated
+
+#### Issue: "Token not found" errors from AI assistants
+**Symptoms**: AI reports it cannot access your accounts despite connection
+
+**Solutions**:
+1. **Check provider status**: Must be green "Connected" in Settings
+2. **Test token manually**: Click "Copy Token" to verify token exists
+3. **Approve fresh request**: Have AI make a new request and approve it
+4. **Check token format**: Provider tokens should start with specific prefixes
+
+### Connection Issues
+
+#### Issue: AI assistant can't connect to approval app
+**Symptoms**: AI reports connection failed, WebSocket errors
+
+**Solutions**:
+1. **Verify connection URL**: Should be `ws://localhost:8080?key=YOUR_KEY`
+2. **Check port availability**: 
+   ```bash
+   # Check if port 8080 is in use
+   netstat -an | grep 8080
+   ```
+3. **Regenerate WebSocket key**: Settings → WebSocket → Regenerate Key
+4. **Restart the app**: Sometimes helps with port conflicts
+5. **Check firewall**: Ensure localhost connections are allowed
+
+#### Issue: App doesn't appear in system tray
+**Symptoms**: App starts but no tray icon visible
+
+**Solutions**:
+1. **Enable system tray**: Check OS settings for notification area
+2. **Check hidden icons**: Look in overflow area of system tray  
+3. **Restart app**: Exit completely and restart
+4. **Check icon files**: Ensure assets folder contains required icons
+5. **Update permissions**: App may need elevated permissions
+
+## Best Practices
+
+### Security
+- ✅ **Only approve requests you understand**
+- ✅ **Regularly review connected providers**
+- ✅ **Rotate WebSocket keys monthly**
+- ✅ **Use strong OAuth app credentials**
+- ❌ **Don't share connection URLs publicly**
+
+### Maintenance
+- ✅ **Keep the app updated**
+- ✅ **Monitor provider status weekly**
+- ✅ **Back up OAuth app credentials**
+- ✅ **Document your provider configurations**
+- ❌ **Don't ignore expired token warnings**
+
+### Usage
+- ✅ **Read approval requests carefully**
+- ✅ **Test with low-risk operations first**
+- ✅ **Use descriptive names for custom providers**
+- ✅ **Keep approval workflow efficient**
+- ❌ **Don't approve everything automatically**
+
+Remember: Most issues can be resolved by disconnecting and reconnecting the problematic provider, or by regenerating security keys. The app is designed to be resilient and recoverable from most error states.

@@ -1,0 +1,265 @@
+# Keyboard MCP Desktop App - User Guide
+
+## Overview
+
+The Keyboard MCP Desktop App is a security approval system that sits in your system tray and helps you safely approve or reject code execution requests from AI assistants and other applications. It provides secure OAuth authentication with popular services and manages user tokens for API access.
+
+## Getting Started
+
+### First Launch
+
+When you first launch the app, you'll see it appear in your system tray (menu bar on macOS). The app starts with a basic authentication screen.
+
+### Authentication Options
+
+You have two ways to get started:
+
+1. **Sign In**: Connect with your OAuth account for full security features
+2. **Skip Authentication**: Use the app without OAuth (limited functionality)
+
+## OAuth Providers
+
+OAuth providers allow you to securely connect the app to services like Google, GitHub, and Microsoft. This enables AI assistants to access your accounts safely through the approval system.
+
+### Managing OAuth Providers
+
+1. Click the **Settings** button in the main window
+2. Navigate to the **OAuth Providers** tab
+3. Here you can see all available providers and their connection status
+
+### Built-in Providers
+
+The app comes with several pre-configured providers:
+
+#### Google
+- **What it provides**: Access to Gmail, Google Drive, Google Sheets, Google Slides
+- **Scopes included**:
+  - Basic profile information (email, name)
+  - Google Drive read access
+  - Gmail read access  
+  - Google Sheets full access
+  - Google Slides full access
+  - File creation in Google Drive
+
+#### GitHub  
+- **What it provides**: Access to your GitHub repositories and profile
+- **Scopes included**:
+  - User email and profile
+  - Repository access
+
+#### Microsoft
+- **What it provides**: Access to Microsoft Graph API
+- **Scopes included**:
+  - Basic profile information
+  - User read access
+
+### Connecting to a Provider
+
+1. **Find the provider** in the OAuth Providers list
+2. **Click "Connect"** - this will open your web browser
+3. **Sign in** to the service (Google, GitHub, etc.)
+4. **Grant permissions** when prompted
+5. **Return to the app** - the connection will be automatic
+
+The provider will now show as "Connected" with a green badge.
+
+### Provider Status Indicators
+
+- 🟢 **Connected**: Successfully authenticated and tokens are valid
+- 🟡 **Expired**: Tokens need refreshing (click "Refresh" button)
+- 🔴 **Not Connected**: No authentication or connection failed
+- ⚪ **No Client ID**: Provider needs configuration (see Custom Providers)
+
+### Managing Connected Providers
+
+For each connected provider, you can:
+
+- **Copy Token**: Get the current access token for manual use
+- **Refresh**: Update expired tokens
+- **Disconnect**: Remove the connection entirely
+
+## User Tokens
+
+User tokens are the core feature that allows AI assistants to access your connected services safely.
+
+### How User Tokens Work
+
+1. **AI Request**: An AI assistant requests access to a service (e.g., "read my Gmail")
+2. **App Approval**: The request appears in your approval app
+3. **User Decision**: You approve or reject the request
+4. **Token Delivery**: If approved, the app provides a temporary access token
+5. **Secure Access**: The AI can now access your account with the token
+
+### Available Token Types
+
+When you connect OAuth providers, the following user tokens become available:
+
+- `KEYBOARD_PROVIDER_USER_TOKEN_FOR_GOOGLE`: Access Google services
+- `KEYBOARD_PROVIDER_USER_TOKEN_FOR_GITHUB`: Access GitHub API
+- `KEYBOARD_PROVIDER_USER_TOKEN_FOR_MICROSOFT`: Access Microsoft Graph
+- `KEYBOARD_PROVIDER_USER_TOKEN_FOR_[PROVIDER]`: Any custom provider you've added
+
+### Viewing Available Tokens
+
+1. Go to **Settings** → **OAuth Providers**
+2. Connected providers will show which tokens are available
+3. You can copy tokens manually if needed
+
+### Token Security Features
+
+- **Temporary**: Tokens expire automatically based on the OAuth provider's settings
+- **Encrypted**: All tokens are stored encrypted on your device
+- **Per-Provider**: Each service has separate, isolated tokens
+- **User-Controlled**: You approve each request for token access
+
+## Approval Workflow
+
+### Security Evaluation Requests
+
+When an AI wants to execute code or access your accounts, you'll see approval requests:
+
+#### Request Details
+
+Each request shows:
+- **Risk Level**: Low, Medium, or High
+- **What the AI wants to do**: Plain English explanation
+- **Generated Code**: The actual code that will run
+- **Timestamp**: When the request was made
+
+#### Making Approval Decisions
+
+1. **Read the explanation**: Understand what the AI wants to do
+2. **Review the code**: Check the "Generated Script" tab for technical details
+3. **Assess the risk**: Consider the risk level and your comfort
+4. **Decide**: Click "Approve" or "Reject"
+
+#### Best Practices for Approvals
+
+✅ **Approve when**:
+- The action matches what you requested
+- The risk level is appropriate
+- You understand what the code does
+- The code only accesses data you're comfortable sharing
+
+❌ **Reject when**:
+- The action seems suspicious or unexpected  
+- The risk level is higher than you're comfortable with
+- The code tries to access sensitive data
+- You don't understand what the code will do
+
+## Custom OAuth Providers
+
+You can add your own OAuth providers for services not built into the app.
+
+### Adding a Custom Provider
+
+1. Go to **Settings** → **OAuth Providers**
+2. Click **Add Provider**
+3. Fill in the provider details:
+
+#### Required Information
+
+- **Provider ID**: Unique identifier (e.g., "slack", "dropbox")
+- **Display Name**: Human-readable name (e.g., "Slack", "Dropbox")
+- **Client ID**: From your OAuth app registration
+- **Authorization URL**: Where users go to sign in
+- **Token URL**: Where the app exchanges codes for tokens
+
+#### Optional Information
+
+- **Client Secret**: For OAuth flows that require it
+- **User Info URL**: To get user profile information
+- **Scopes**: Permissions to request (comma-separated)
+- **Additional Parameters**: Extra OAuth parameters in JSON format
+
+#### Popular Provider Templates
+
+The app provides quick-start templates for:
+- **Google**: Pre-filled with Google OAuth endpoints
+- **GitHub**: Pre-filled with GitHub OAuth endpoints  
+- **Microsoft**: Pre-filled with Microsoft OAuth endpoints
+- **Discord**: Pre-filled with Discord OAuth endpoints
+
+### OAuth App Setup
+
+Before adding a custom provider, you need to create an OAuth app with that service:
+
+#### General Steps
+1. Go to the service's developer console
+2. Create a new OAuth application
+3. Set the **Redirect URI** to: `http://localhost:8082/callback`
+4. Copy the **Client ID** (and **Client Secret** if provided)
+5. Use these values when adding the provider to the app
+
+## Server Providers
+
+Server Providers allow you to connect to centralized OAuth servers that manage multiple providers.
+
+### When to Use Server Providers
+
+- Your organization has a centralized OAuth server
+- You want to manage OAuth apps centrally
+- You're working with custom internal APIs
+- You need OAuth for services that don't have public OAuth apps
+
+### Adding a Server Provider
+
+1. Go to **Settings** → **Server Providers**  
+2. Click **Add Server**
+3. Enter:
+   - **Server Name**: Descriptive name (e.g., "Company OAuth Server")
+   - **Server URL**: Base URL of the OAuth server (e.g., `https://oauth.company.com`)
+
+### Using Server Providers
+
+Once added, the app will:
+1. **Fetch available providers** from the server
+2. **Show connection status** for each provider
+3. **Allow authentication** through the server
+4. **Manage tokens** automatically
+
+Server providers show:
+- 🟢 **Configured**: Ready for connection on the server
+- 🔴 **Not Configured**: Server doesn't have this provider set up
+
+## WebSocket Connection
+
+The WebSocket connection allows external applications (like AI assistants) to communicate with the approval app.
+
+### Connection Details
+
+- **URL**: `ws://localhost:8080`
+- **Authentication**: Requires connection key
+- **Security**: Restricted to localhost only
+
+### Getting Your Connection Key
+
+1. Go to **Settings** → **WebSocket**
+2. Copy the **Full Connection URL** 
+3. Share this URL with applications that need to connect
+
+### Key Management
+
+- **Automatic Generation**: Keys are created automatically
+- **Rotation**: Keys rotate every 30 days for security
+- **Manual Regeneration**: You can create new keys anytime
+
+⚠️ **Important**: When you regenerate a key, all existing connections will be disconnected and need the new key.
+
+## Security Best Practices
+
+#### For General Users
+- ✅ Only approve requests you understand
+- ✅ Regularly review connected providers
+- ✅ Disconnect unused OAuth providers
+- ✅ Keep the app updated
+- ❌ Don't share your connection keys publicly
+
+#### For Power Users  
+- ✅ Use environment variables for OAuth client secrets
+- ✅ Set up proper redirect URIs for each provider
+- ✅ Monitor token usage and expiration
+- ✅ Use server providers for centralized management
+- ✅ Regularly rotate WebSocket keys
+
+This user guide should help you get the most out of the Keyboard MCP Desktop App's security and OAuth features. Remember: the app is designed to keep you in control of your data while enabling safe AI assistance.
